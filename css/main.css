@@ -41,7 +41,12 @@ body {
   color: #fff;
 }
 
-.quiz-status {
+.question-number {
   color: #FFFC00;
   text-align: center;
+}
+
+.quiz-status {
+  text-align: center;
+  color: #fff;
 }
