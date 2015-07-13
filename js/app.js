@@ -57,7 +57,7 @@ $(document).ready(function(){
       }
 
       this.populateText = function() {
-        $('.quiz-question').append('<h1>' + question_text + '</h1>');
+        $('.quiz-question').html('<h1>' + question_text + '</h1>');
         for (var i = 0, j = answers.length; i < j; i++) {
           var answer = answers[i];
           $('.answer-list').append('<li>' + answer.getAnswerText() + '</li>');
@@ -66,7 +66,9 @@ $(document).ready(function(){
 
       function success() {
         $('.quiz-status').html('<h1>CORRECT!</h1>').fadeIn();
-        $('.quiz-status').fadeOut(800);
+        $('.quiz-status').fadeOut(800, function () {
+          clearText();
+        });
       }
 
       function displayWrong() {
@@ -75,6 +77,7 @@ $(document).ready(function(){
       }
 
       function clearText() {
+        $('.answer-list').empty();
         $('.quiz-status').empty();
       }
 
@@ -107,6 +110,19 @@ $(document).ready(function(){
     $('.answer-list > li').on('click', function(event) {
       question_one.answerQuestion(event.target.innerText);
     });
+
+    // var question_two = new Question(
+    //   'The color orange is named after the fruit',
+    //   [
+    //       new Answer('True', true),
+    //       new Answer('False', false)
+    //   ]
+    // );
+
+    // question_two.populateText();
+    // $('.answer-list > li').on('click', function(event) {
+    //   question_two.answerQuestion(event.target.innerText);
+    // });
 
   }
 
