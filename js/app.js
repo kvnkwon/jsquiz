@@ -6,25 +6,68 @@ $(document).ready(function(){
   });
 
   function Quiz() {
+     // $(quiz_question_div_previx + this.id).show();
 
-    this.questionCount = 1;
+    // $('#quiz-parent-div').append('<div id="' + quiz_question_div_prefix + this.id +'"> ' + question.getQuestionText() + '</div>');
+
+
     var quiz = this;
-    var questions = [];
+    var quiz_question_div_prefix = 'quiz-question-';
+    var parentDiv = $('.quiz-area');
 
-    this.getQuestions = function() {
-      return questions;
+    this.questions = [];
+    this.questionCount = 1;
+    this.currentIndex;
+
+    this.getPrefix = function() {
+      return quiz_question_div_prefix;
     };
 
-    this.displayCount = function(length) {
-      $('.question-number').html('<h3>Question ' + quiz.questionCount + ' of ' + length + ' questions</h3>');
+    this.getQuestions = function() {
+      return quiz.questions;
+    };
+
+    this.displayCount = function() {
+      parentDiv.append('<h3 class="question-number">Question ' + quiz.questionCount + ' of ' + quiz.questions.length + ' questions</h3>');
     };
 
     this.addQuestion = function(question) {
-      questions.push(question);
+      quiz.questions.push(question);
+    };
+
+    this.getCurrentIndex = function() {
+      return currentIndex;
     };
 
     this.getCurrentQuestion = function() {
-      return questions.shift();
+      return quiz.questions[currentIndex];
+    };
+
+    this.addQuestionsToList = function() {
+      for (var i=0, j=quiz.questions.length; i < j; i++) {
+        var this_div_id = quiz_question_div_prefix + i;
+        parentDiv.append('<div id="' + this_div_id + '"></div>');
+
+        var question = quiz.questions[i];
+
+        $('#' + this_div_id).append('<h1>' + question.getQuestionText() + '</h1>');
+
+        var answers = question.getAnswers();
+        var answers_html = '';
+        for (var n=0, l=answers.length; n < l; n++) {
+          var answer = answers[n];
+          answers_html += '<li>' + answer.getAnswerText() + '</li>';
+        }
+
+        $('#' + this_div_id).addClass("hidden").append(answers_html);
+
+      }
+    };
+
+    this.render = function(question_index) {
+      currentIndex = question_index;
+      var current = quiz_question_div_prefix + currentIndex;
+      $('#' + current).removeClass("hidden");
     };
 
   }
@@ -33,9 +76,23 @@ $(document).ready(function(){
     this.question_text = question_text;
     this.answers = answers;
     this.user_answer;
+    this.questionNumber = 0;
+
+    var question = this;
+    var parentDiv = $('.quiz-area');
 
     this.getQuestionText = function() {
       return question_text;
+    };
+
+    this.getAnswers = function() {
+      return answers;
+    };
+
+    this.answerQuestion = function(answer) {
+      // Store user answer
+      user_answer = answer;
+      isCorrect();
     };
 
     function getCorrectAnswer() {
@@ -53,11 +110,11 @@ $(document).ready(function(){
       return answer_to_return; // Correct answer
     }
 
-    this.answerQuestion = function(answer) {
-      // Store user answer
-      user_answer = answer;
-      isCorrect();
-    };
+    // this.answerQuestion = function(answer) {
+    //   // Store user answer
+    //   user_answer = answer;
+    //   isCorrect();
+    // };
 
     function isCorrect() {
       // Compare user answer to correct answer
@@ -69,37 +126,30 @@ $(document).ready(function(){
       }
     }
 
-    this.populateText = function() {
-      $('.quiz-question').html('<h1>' + question_text + '</h1>');
-      for (var i = 0, j = answers.length; i < j; i++) {
-        var answer = answers[i];
-        $('.answer-list').append('<li>' + answer.getAnswerText() + '</li>');
-      }
-    };
-
     function success() {
-      $('.quiz-status').html('<h1>CORRECT!</h1>').fadeIn();
+      parentDiv.append('<h1 class="quiz-status">CORRECT!</h1>').fadeIn();
       $('.quiz-status').fadeOut(800, function () {
-        clearText();
-        var nextQuestion = quiz.getCurrentQuestion();
-        nextQuestion.populateText();
+        clearText(quiz.getPrefix() + quiz.getCurrentIndex());
         quiz.questionCount += 1;
-        quiz.displayCount(5);
-        $('.answer-list > li').on('click', function(event) {
-          nextQuestion.answerQuestion(event.target.innerText);
+        question.questionNumber += 1;
+        quiz.render(question.questionNumber);
+        quiz.displayCount();
+        var nextQuestionDiv = quiz.getPrefix() + quiz.getCurrentIndex();
+        var nextQues = quiz.getCurrentQuestion();
+        $('#' + nextQuestionDiv + '> li').on('click', function(event) {
+          nextQues.answerQuestion(event.target.innerText);
         });
       });
     }
 
     function displayWrong() {
-      $('.quiz-status').html('<h1>WRONG!</h1>').fadeIn();
+      parentDiv.append('<h1 class="quiz-status">WRONG!</h1>').fadeIn();
       $('.quiz-status').fadeOut(800);
     }
 
-    function clearText() {
-      $('.answer-list').empty();
+    function clearText(questionDiv) {
+      $('#' + questionDiv).addClass('hidden');
       $('.quiz-status').empty();
-      $('.quiz-question').empty();
       $('.question-number').empty();
     }
 
@@ -167,18 +217,15 @@ $(document).ready(function(){
     )
   );
 
-  // var quiz_question_div_prefix = '#quiz-question-';
 
-  // $(quiz_question_div_previx + this.id).show();
 
-  // $('#quiz-parent-div').append('<div id="' + quiz_question_div_prefix + this.id +'"> ' + question.getQuestionText() + '</div>');
-
-  // console.log(quiz.getQuestions);
-  var currentQuestion = quiz.getCurrentQuestion();
-  currentQuestion.populateText();
-  quiz.displayCount(5);
-  $('.answer-list > li').on('click', function(event) {
-    currentQuestion.answerQuestion(event.target.innerText);
+  quiz.addQuestionsToList();
+  quiz.render(0);
+  quiz.displayCount();
+  var currentQuestionDiv = quiz.getPrefix() + quiz.getCurrentIndex();
+  var currentQues = quiz.getCurrentQuestion();
+  $('#' + currentQuestionDiv + '> li').on('click', function(event) {
+    currentQues.answerQuestion(event.target.innerText);
   });
 
 
