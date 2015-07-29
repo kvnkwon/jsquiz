@@ -6,10 +6,6 @@ $(document).ready(function(){
   });
 
   function Quiz() {
-     // $(quiz_question_div_previx + this.id).show();
-
-    // $('#quiz-parent-div').append('<div id="' + quiz_question_div_prefix + this.id +'"> ' + question.getQuestionText() + '</div>');
-
 
     var quiz = this;
     var quiz_question_div_prefix = 'quiz-question-';
@@ -21,6 +17,10 @@ $(document).ready(function(){
 
     this.getPrefix = function() {
       return quiz_question_div_prefix;
+    };
+
+    this.upQuestionCount = function() {
+      this.questionCount += 1;
     };
 
     this.getQuestions = function() {
@@ -36,11 +36,15 @@ $(document).ready(function(){
     };
 
     this.getCurrentIndex = function() {
-      return currentIndex;
+      return quiz.currentIndex;
+    };
+
+    this.upCurrentIndex = function() {
+      quiz.currentIndex += 1;
     };
 
     this.getCurrentQuestion = function() {
-      return quiz.questions[currentIndex];
+      return quiz.questions[quiz.currentIndex];
     };
 
     this.addQuestionsToList = function() {
@@ -65,8 +69,8 @@ $(document).ready(function(){
     };
 
     this.render = function(question_index) {
-      currentIndex = question_index;
-      var current = quiz_question_div_prefix + currentIndex;
+      quiz.currentIndex = question_index;
+      var current = quiz_question_div_prefix + quiz.currentIndex;
       $('#' + current).removeClass("hidden");
     };
 
@@ -76,8 +80,6 @@ $(document).ready(function(){
     this.question_text = question_text;
     this.answers = answers;
     this.user_answer;
-    this.questionNumber = 0;
-
     var question = this;
     var parentDiv = $('.quiz-area');
 
@@ -110,12 +112,6 @@ $(document).ready(function(){
       return answer_to_return; // Correct answer
     }
 
-    // this.answerQuestion = function(answer) {
-    //   // Store user answer
-    //   user_answer = answer;
-    //   isCorrect();
-    // };
-
     function isCorrect() {
       // Compare user answer to correct answer
       var correct_answer = getCorrectAnswer();
@@ -126,30 +122,36 @@ $(document).ready(function(){
       }
     }
 
+    this.clickCallback = function(event, nextQues) {
+      nextQues.answerQuestion(event.target.innerText);
+    };
+
     function success() {
       parentDiv.append('<h1 class="quiz-status">CORRECT!</h1>').fadeIn();
       $('.quiz-status').fadeOut(800, function () {
         clearText(quiz.getPrefix() + quiz.getCurrentIndex());
-        quiz.questionCount += 1;
-        question.questionNumber += 1;
-        quiz.render(question.questionNumber);
+        quiz.upQuestionCount();
+        quiz.upCurrentIndex();
+        quiz.render(quiz.getCurrentIndex());
         quiz.displayCount();
         var nextQuestionDiv = quiz.getPrefix() + quiz.getCurrentIndex();
-        var nextQues = quiz.getCurrentQuestion();
         $('#' + nextQuestionDiv + '> li').on('click', function(event) {
-          nextQues.answerQuestion(event.target.innerText);
+          question.clickCallback(event, quiz.getCurrentQuestion());
+          $('#' + nextQuestionDiv + '> li').unbind('click', question.clickCallback);
         });
       });
     }
 
     function displayWrong() {
       parentDiv.append('<h1 class="quiz-status">WRONG!</h1>').fadeIn();
-      $('.quiz-status').fadeOut(800);
+      $('.quiz-status').fadeOut(800, function() {
+        $('.quiz-status').remove();
+      });
     }
 
     function clearText(questionDiv) {
       $('#' + questionDiv).addClass('hidden');
-      $('.quiz-status').empty();
+      $('.quiz-status').remove();
       $('.question-number').empty();
     }
 
